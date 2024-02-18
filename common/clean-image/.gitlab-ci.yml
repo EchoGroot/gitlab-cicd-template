@@ -1,0 +1,18 @@
+.clean_image_base:
+  stage: clean
+  image: 172.1.1.1/common/golang:1.20.3
+  tags:
+    - x86
+  interruptible: true
+  variables:
+    SUB_MODULE: default
+    MODULE_PREFIX: default
+  script:
+    - |
+      if [ -z ${CI_COMMIT_TAG} ];then
+      VERSION=${CI_COMMIT_SHORT_SHA};
+      else
+      VERSION=${CI_COMMIT_TAG};
+      fi;
+    - echo "VERSION:$VERSION"
+    - timeout 10 docker rmi -f "$MODULE_PREFIX-$SUB_MODULE:$VERSION";
