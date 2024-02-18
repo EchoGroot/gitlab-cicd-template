@@ -1,0 +1,43 @@
+.deploy_to_k8s: &deploy_to_k8s
+                  if [ -z ${CI_COMMIT_TAG} ];then
+                  VERSION=${CI_COMMIT_SHORT_SHA};
+                  else
+                  VERSION=${CI_COMMIT_TAG};
+                  fi;
+                  echo "VERSION:$VERSION";
+                  
+                  mkdir -p /.kube;
+                  mkdir -p /root/.kube;
+                  
+                  for ((i=0;i<${#K8S_CONFIG[*]};i++)); do
+                  echo "index:$i";
+                  cp -r deploy /tmp;
+                  cd /tmp;
+                  sed -i "s/IMAGE_VERSION/$VERSION/g" deploy/$SUB_MODULE/$ENV/*.yaml;
+                  sed -i "s/NAME_SPACE/${NAME_SPACE[i]}/g" deploy/$SUB_MODULE/$ENV/*.yaml;
+                  sed -i "s/IMAGE_NAME/$MODULE_PREFIX-$SUB_MODULE/g" deploy/$SUB_MODULE/$ENV/*.yaml;
+                  sed -i "s/DOCKER_REGISTRY_ADDR/${DOCKER_REGISTRY_ADDR}/g" deploy/$SUB_MODULE/$ENV/*.yaml;
+                  sed -i "s/IMAGE_GROUP/${IMAGE_GROUP}/g" deploy/$SUB_MODULE/$ENV/*.yaml;
+                  
+                  echo ${K8S_CONFIG[i]} | base64 -id > /.kube/config;
+                  echo ${K8S_CONFIG[i]} | base64 -id > /root/.kube/config;
+                  kubectl apply -f deploy/$SUB_MODULE/$ENV;
+                  cd - > /dev/null;
+                  rm -rf /tmp/deploy;
+                  done;
+
+.deploy_to_k8s_base:
+  stage: deploy
+  image:
+    name: 172.1.1.1/common/kubectl:1.25.12
+    entrypoint: [ "" ]
+  tags:
+    - x86
+  interruptible: true
+  variables:
+    SUB_MODULE: default
+    MODULE_PREFIX: default
+    IMAGE_GROUP: default
+    ENV: default
+  script:
+    - *deploy_to_k8s
