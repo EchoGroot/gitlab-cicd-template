@@ -1,0 +1,6 @@
+include: '/golang/unit-test/base/.gitlab-ci.yml'
+
+unit_test:
+  extends:
+    - .unit_test_base
+

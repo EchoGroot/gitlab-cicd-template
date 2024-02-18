@@ -1,0 +1,14 @@
+.unit_test_base:
+  stage: test
+  image: 172.1.1.1/common/golang:1.20.3
+  tags:
+    - x86
+  interruptible: false
+  only:
+    changes:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".gitlab-ci.yml"
+  script:
+    - go test -short `go list ./...`

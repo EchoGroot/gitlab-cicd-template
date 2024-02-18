@@ -1,0 +1,25 @@
+include: '/golang/golangci-lint/lint-rule.yml'
+
+.golangci_lint_base:
+  stage: lint
+  image: 172.1.1.1/common/golangci-lint:1.52.2
+  tags:
+    - x86
+  interruptible: true
+  only:
+    changes:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".gitlab-ci.yml"
+  extends:
+    - .lint_rule
+  variables:
+    GOLANGCI_LINT_CACHE: /cache/${CI_PROJECT_PATH}/golangci-lint-cache
+  script:
+    - echo "lint 规则参考 kratos"
+    - echo "注意：当前使用的代码检查规则是gitlab-cicd-template仓库里的/golang/golangci-lint/lint-rule.yml，并不是当前项目里的.golangci.yml"
+    - mkdir -p $GOLANGCI_LINT_CACHE
+    - go mod tidy # 必须先下载依赖，否则golangci-lint会报：could not load export data: no export data for
+    - golangci-lint run -v --timeout=5m
+

@@ -1,0 +1,5 @@
+include: '/golang/golangci-lint/1.52.2/base/.gitlab-ci.yml'
+
+golangci_lint:
+  extends:
+    - .golangci_lint_base
