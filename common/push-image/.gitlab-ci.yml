@@ -1,0 +1,37 @@
+.push_image: &push_image
+               set -e;
+               if [ -z ${CI_COMMIT_TAG} ];then
+               VERSION=${CI_COMMIT_SHORT_SHA};
+               else
+               VERSION=${CI_COMMIT_TAG};
+               fi;
+               echo "APP VERSION:$VERSION";
+               
+               
+               if [ -z ${CUSTOM_IMAGE_NAME} ];then
+               TARGET_IMAGE_NAME=$MODULE_PREFIX-$SUB_MODULE;
+               else
+               TARGET_IMAGE_NAME=${CUSTOM_IMAGE_NAME};
+               fi;
+               echo "镜像名称（可通过'CUSTOM_IMAGE_NAME'变量指定）：${TARGET_IMAGE_NAME}";
+
+               docker login "${DOCKER_REGISTRY_SERVER}" --username "${DOCKER_REGISTRY_USER}" --password "${DOCKER_REGISTRY_PASSWORD}";
+               docker tag "$MODULE_PREFIX-$SUB_MODULE:$VERSION" "${DOCKER_REGISTRY_ADDR}/${IMAGE_GROUP}/${TARGET_IMAGE_NAME}:$VERSION";
+               docker tag "$MODULE_PREFIX-$SUB_MODULE:$VERSION" "${DOCKER_REGISTRY_ADDR}/${IMAGE_GROUP}/${TARGET_IMAGE_NAME}:latest";
+               docker push "${DOCKER_REGISTRY_ADDR}/${IMAGE_GROUP}/${TARGET_IMAGE_NAME}:$VERSION";
+               docker push "${DOCKER_REGISTRY_ADDR}/${IMAGE_GROUP}/${TARGET_IMAGE_NAME}:latest";
+               timeout 10 docker rmi -f "${DOCKER_REGISTRY_ADDR}/${IMAGE_GROUP}/${TARGET_IMAGE_NAME}:$VERSION";
+               timeout 10 docker rmi -f "${DOCKER_REGISTRY_ADDR}/${IMAGE_GROUP}/${TARGET_IMAGE_NAME}:latest";
+
+.push_image_base:
+  stage: push
+  image: 172.1.1.1/common/golang:1.20.3
+  tags:
+    - x86
+  interruptible: true
+  variables:
+    SUB_MODULE: default
+    MODULE_PREFIX: default
+    IMAGE_GROUP: default
+  script:
+    - *push_image
