@@ -1,0 +1,13 @@
+.eslint_base:
+  stage: lint
+  image: 172.1.1.1/common/node:14.20.0
+  tags:
+    - x86
+  interruptible: true
+  script:
+    - mkdir -p /cache/${CI_PROJECT_PATH}/node_modules
+    - ln -s /cache/${CI_PROJECT_PATH}/node_modules node_modules
+    - npm get registry
+    - yarn config get registry
+    - yarn install
+    - ./node_modules/.bin/eslint --fix --ext .js,.vue ./

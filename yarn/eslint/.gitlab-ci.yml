@@ -1,0 +1,5 @@
+include: '/yarn/eslint/base/.gitlab-ci.yml'
+
+eslint:
+  extends:
+    - .eslint_base

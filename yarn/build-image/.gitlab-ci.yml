@@ -1,0 +1,30 @@
+.build_app: &build_app
+              yarn;
+              yarn build;
+
+.build_image: &build_image
+                docker build -t $MODULE_PREFIX-$SUB_MODULE:$VERSION .
+
+
+.build_image_base:
+  stage: build
+  image: 172.1.1.1/common/node:14.20.0
+  tags:
+    - x86
+  interruptible: true
+  variables:
+    SUB_MODULE: default
+    MODULE_PREFIX: default
+    IMAGE_GROUP: default
+  script:
+    - |
+      if [ -z ${CI_COMMIT_TAG} ];then
+      VERSION=${CI_COMMIT_SHORT_SHA};
+      else
+      VERSION=${CI_COMMIT_TAG};
+      fi;
+    - echo "VERSION:$VERSION"
+    - mkdir -p /cache/${CI_PROJECT_PATH}/node_modules
+    - ln -s /cache/${CI_PROJECT_PATH}/node_modules node_modules
+    - *build_app
+    - *build_image
