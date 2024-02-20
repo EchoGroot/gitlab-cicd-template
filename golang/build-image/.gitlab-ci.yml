@@ -1,5 +1,3 @@
-include: '/common/push-image/.gitlab-ci.yml'
-
 .build_app: &build_app
               mkdir -p bin;
               cd cmd/$SUB_MODULE;
